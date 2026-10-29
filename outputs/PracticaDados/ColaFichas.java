@@ -1,77 +1,60 @@
-/**
- * Cola FIFO de fichas implementada únicamente con un arreglo circular.
- * FIFO significa "primero en entrar, primero en salir": una ficha se agrega
- * al final y se retira desde el frente. En esta práctica cada entero guarda
- * el turno en que la ficha entró al sistema.
- */
+// Esta clase es una cola hecha con un arreglo. La ficha que entra primero
+// es la primera que puede salir. Cada ficha guarda el turno en que entró.
 public class ColaFichas {
-    /** Espacio reservado inicialmente; el arreglo crece si se llena. */
+    // La cola empieza con ocho espacios. Si se llena, el arreglo crece.
     private static final int CAPACIDAD_INICIAL = 8;
 
-    /** Arreglo que contiene los datos de la cola. */
+    // Aquí guardamos las fichas y el turno de entrada de cada una.
     private int[] fichas;
-    /** Índice del elemento que se retirará en la siguiente llamada a desencolar. */
+    // Posición de la ficha que saldrá primero.
     private int frente;
-    /** Número de elementos válidos que hay actualmente en el arreglo circular. */
+    // Cuántas fichas hay en la cola ahora.
     private int cantidad;
 
-    /** Crea una cola vacía con capacidad inicial de ocho fichas. */
+    // Creamos la cola vacía con ocho espacios.
     public ColaFichas() {
         fichas = new int[CAPACIDAD_INICIAL];
     }
 
-    /**
-     * Agrega una ficha al final lógico de la cola.
-     * Si frente + cantidad rebasa el último índice, el módulo hace que el
-     * índice regrese al inicio del arreglo y reutilice el espacio circular.
-     *
-     * @param ficha dato asociado a la ficha (en este juego, su turno de entrada)
-     */
+    // Agrega una ficha al final. El % hace que el índice vuelva al inicio
+    // cuando llega al final del arreglo.
     public void encolar(int ficha) {
-        // No se puede distinguir entre lleno y vacío si se ocupa el arreglo entero;
-        // por eso se duplica antes de insertar cuando cantidad == capacidad.
+        // Si ya no caben más fichas, hacemos más grande el arreglo primero.
         if (cantidad == fichas.length) ampliar();
         int fin = (frente + cantidad) % fichas.length;
         fichas[fin] = ficha;
         cantidad++;
     }
 
-    /**
-     * Retira y devuelve el dato de la ficha que lleva más tiempo en la cola.
-     *
-     * @return dato guardado con la ficha ubicada al frente
-     * @throws IllegalStateException si se intenta retirar de una cola vacía
-     */
+    // Saca la ficha que lleva más tiempo esperando y devuelve su turno de entrada.
     public int desencolar() {
         if (estaVacia()) throw new IllegalStateException("La cola está vacía.");
         int ficha = fichas[frente];
-        // Avanzar circularmente evita mover todos los demás elementos.
+        // Avanzamos el frente. No hace falta recorrer ni mover las otras fichas.
         frente = (frente + 1) % fichas.length;
         cantidad--;
-        // Normalizar el frente facilita las inserciones cuando vuelve a quedar vacía.
+        // Si quedó vacía, la dejamos lista para volver a empezar desde el índice 0.
         if (cantidad == 0) frente = 0;
         return ficha;
     }
 
-    /** @return número de fichas que hay dentro de la cola */
+    // Devuelve cuántas fichas hay esperando.
     public int tamano() {
         return cantidad;
     }
 
-    /** @return true cuando no hay fichas para retirar */
+    // Nos dice si ya no hay fichas que sacar.
     public boolean estaVacia() {
         return cantidad == 0;
     }
 
-    /**
-     * Duplica la capacidad y copia los elementos desde el frente en orden FIFO.
-     * Al copiar, la cola queda "desenrollada": su primer elemento pasa al índice 0.
-     */
+    // Crea un arreglo del doble de tamaño y copia las fichas en el mismo orden.
+    // Después de copiarlas, el frente vuelve a quedar en el índice 0.
     private void ampliar() {
         int[] nuevoArreglo = new int[fichas.length * 2];
         for (int i = 0; i < cantidad; i++) {
-            // El módulo también permite copiar correctamente cuando los datos
-            // originales ocupan el final y el inicio del arreglo circular.
+            // Usamos % porque la cola podría estar repartida entre el final
+            // y el inicio del arreglo viejo.
             nuevoArreglo[i] = fichas[(frente + i) % fichas.length];
         }
         fichas = nuevoArreglo;

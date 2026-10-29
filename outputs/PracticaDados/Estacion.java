@@ -1,26 +1,23 @@
-/**
- * Representa una etapa o recurso de procesamiento de la línea.
- * Su capacidad de un turno es la suma de los resultados de todos los dados
- * asignados a ella; reiniciar la capacidad no cambia sus dados asignados.
- */
+// Una estación representa uno de los pasos de la línea de producción.
+// Su capacidad es la suma de los dados que tiene en el turno actual.
 public class Estacion {
-    /** Número visible de la estación (1..10). */
+    // Número que vemos en el tablero, del 1 al 10.
     private final int numero;
-    /** Capacidad acumulada para el turno actual. */
+    // Aquí vamos sumando lo que salió en los dados este turno.
     private int capacidad;
 
-    /** Crea una estación identificada por su número. */
+    // Creamos la estación con su número.
     public Estacion(int numero) { this.numero = numero; }
 
-    /** Suma el resultado de un dado a la capacidad de este turno. */
+    // Si hay varios dados aquí, vamos sumando sus resultados.
     public void agregarCapacidad(int valor) { capacidad += valor; }
 
-    /** @return número de estación */
+    // Devuelve el número de estación.
     public int getNumero() { return numero; }
 
-    /** @return suma de los resultados de sus dados en el turno actual */
+    // Devuelve la capacidad que juntó en este turno.
     public int getCapacidad() { return capacidad; }
 
-    /** Comienza la siguiente ronda borrando solo la capacidad del turno anterior. */
+    // Al empezar otra ronda borramos la capacidad anterior, pero los dados siguen aquí.
     public void reiniciarCapacidad() { capacidad = 0; }
 }

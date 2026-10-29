@@ -1,56 +1,39 @@
 import java.util.Random;
 
-/**
- * Representa uno de los diez dados de seis caras del juego.
- * El dado conserva su identificador, la estación a la que está asignado
- * y el resultado más reciente de su lanzamiento.
- */
+// Aquí guardamos lo básico de cada dado: su número, en qué estación está
+// y qué número salió la última vez que lo lanzamos.
 public class Dado {
-    /** Número fijo que identifica este dado en los controles de la interfaz. */
+    // Este número no cambia; sirve para distinguir los dados.
     private final int id;
-    /** Estación asignada, numerada del 1 al 10 (a diferencia de los índices de arreglos). */
+    // Número de estación, del 1 al 10.
     private int estacion;
-    /** Cara obtenida en el último lanzamiento; inicia en cero para indicar "sin lanzar". */
+    // Resultado más reciente. En cero mientras todavía no se lanza.
     private int resultado;
 
-    /**
-     * Crea un dado y lo coloca inicialmente en una estación.
-     *
-     * @param id identificador del dado, del 1 al 10
-     * @param estacionInicial estación inicial asignada
-     */
+    // Creamos el dado y le damos su estación inicial.
     public Dado(int id, int estacionInicial) {
         this.id = id;
         this.estacion = estacionInicial;
     }
 
-    /**
-     * Asigna el dado a una estación, rechazando números fuera del tablero.
-     *
-     * @param estacion número de estación, entre 1 y 10
-     */
+    // Cambia el dado de estación. Si el número no está entre 1 y 10, avisamos del error.
     public void asignarA(int estacion) {
         if (estacion < 1 || estacion > 10) throw new IllegalArgumentException("Estación debe ser 1..10.");
         this.estacion = estacion;
     }
 
-    /**
-     * Simula un lanzamiento uniforme de seis caras y recuerda su resultado.
-     *
-     * @param random generador aleatorio compartido por el modelo del juego
-     * @return un número entre 1 y 6
-     */
+    // Saca un número aleatorio del 1 al 6 y lo guarda para mostrarlo en pantalla.
     public int lanzar(Random random) {
         resultado = random.nextInt(6) + 1;
         return resultado;
     }
 
-    /** @return identificador del dado */
+    // Regresa el número que identifica este dado.
     public int getId() { return id; }
 
-    /** @return estación actualmente asignada, del 1 al 10 */
+    // Regresa la estación donde está ahora.
     public int getEstacion() { return estacion; }
 
-    /** @return último resultado lanzado, o cero si todavía no se ha lanzado */
+    // Regresa el último resultado; antes del primer lanzamiento vale cero.
     public int getResultado() { return resultado; }
 }
