@@ -117,7 +117,8 @@ public class GraficasFinales extends JFrame {
                 dibujarCuadricula(g, izquierda, arriba, graficaAncho, graficaAlto, 1);
                 g.setColor(TEXTO);
                 g.setFont(new Font("SansSerif", Font.PLAIN, 15));
-                g.drawString("No hubo recursos terminados durante esta partida.", izquierda + 35, arriba + graficaAlto / 2);
+                g.drawString("No hay tiempos registrados para recursos ingresados durante la partida.",
+                        izquierda + 20, arriba + graficaAlto / 2);
             } else {
                 dibujarCuadricula(g, izquierda, arriba, graficaAncho, graficaAlto, maximo);
                 dibujarBarras(g, izquierda, arriba, graficaAncho, graficaAlto, cantidad, maximo);
@@ -218,7 +219,7 @@ public class GraficasFinales extends JFrame {
         // Number in system tiene 21 datos: empieza en 0 y luego muestra los 20 turnos.
         private int cantidadPuntos() {
             if (tipo == TipoGrafica.SISTEMA) return JuegoDados.MAX_TURNOS + 1;
-            if (tipo == TipoGrafica.TIEMPO) return juego.getCantidadRecursosFinales();
+            if (tipo == TipoGrafica.TIEMPO) return juego.getCantidadTiemposEnSistema();
             return JuegoDados.MAX_TURNOS;
         }
 

@@ -25,10 +25,12 @@ public class JuegoDados {
     private final int[] throughputPorTurno = new int[MAX_TURNOS];
     // La posición 0 guarda el estado inicial; las posiciones 1..20 son cada turno.
     private final int[] numeroEnSistemaPorTurno = new int[MAX_TURNOS + 1];
-    // Guardamos cuánto tardó cada ficha terminada en llegar a E10.
+    // Guardamos cuánto tardaron en llegar a E10 las fichas que entraron durante la partida.
     private int[] tiemposEnSistema = new int[16];
-    // También sirve para saber cuántas fichas finales hay que dibujar.
+    // Cuántas fichas ya salieron por E10, incluidas las que estaban desde el inicio.
     private int cantidadRecursosFinales;
+    // Las fichas iniciales no tienen una ronda de entrada conocida para medir su tiempo.
+    private int cantidadTiemposEnSistema;
     // Total de fichas que ya salieron por E10.
     private long throughput;
     // Cuántas rondas se han jugado hasta el momento.
@@ -85,7 +87,12 @@ public class JuegoDados {
             int[] lote = new int[mover[estacion]];
             for (int n = 0; n < lote.length; n++) lote[n] = colas[estacion - 1].desencolar();
             if (estacion == NUM_ESTACIONES - 1) {
-                for (int turnoEntrada : lote) guardarTiempoEnSistema(turnoActual - turnoEntrada);
+                cantidadRecursosFinales += lote.length;
+                // Las fichas iniciales tienen turnoEntrada 0, así que no las graficamos:
+                // no sabemos cuánto tiempo llevaban en el sistema antes de empezar.
+                for (int turnoEntrada : lote) {
+                    if (turnoEntrada > 0) guardarTiempoEnSistema(turnoActual - turnoEntrada);
+                }
             } else {
                 transferencias[estacion] = lote;
             }
@@ -112,12 +119,12 @@ public class JuegoDados {
     // Anota el tiempo de una ficha que llegó a la salida. Si ya no cabe,
     // hacemos un arreglo más grande y copiamos lo que teníamos.
     private void guardarTiempoEnSistema(int tiempo) {
-        if (cantidadRecursosFinales == tiemposEnSistema.length) {
+        if (cantidadTiemposEnSistema == tiemposEnSistema.length) {
             int[] ampliado = new int[tiemposEnSistema.length * 2];
             for (int i = 0; i < tiemposEnSistema.length; i++) ampliado[i] = tiemposEnSistema[i];
             tiemposEnSistema = ampliado;
         }
-        tiemposEnSistema[cantidadRecursosFinales++] = tiempo;
+        tiemposEnSistema[cantidadTiemposEnSistema++] = tiempo;
     }
 
     private int contarFichasEnColas() {
@@ -132,6 +139,7 @@ public class JuegoDados {
     public long getThroughput() { return throughput; }
     public int getCantidadCola(int indice) { return colas[indice].tamano(); }
     public int getCantidadRecursosFinales() { return cantidadRecursosFinales; }
+    public int getCantidadTiemposEnSistema() { return cantidadTiemposEnSistema; }
     public int getTiempoEnSistema(int indice) { return tiemposEnSistema[indice]; }
     public int getNumeroEnSistema(int turno) { return numeroEnSistemaPorTurno[turno]; }
     public int getThroughputEnTurno(int turno) { return throughputPorTurno[turno - 1]; }
