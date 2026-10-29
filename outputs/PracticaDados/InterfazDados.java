@@ -37,21 +37,19 @@ public class InterfazDados extends JFrame {
     private final JuegoDados juego = new JuegoDados();
     // Un selector por dado, para poder cambiarlo de estación.
     private final JComboBox<String>[] asignaciones;
-    // Texto que nos dice qué pasó en la última ronda.
-    private final JLabel estado = new JLabel("Acomoda los dados y lanza la primera ronda", SwingConstants.CENTER);
-    // Marcador de arriba, con la ronda y el throughput.
-    private final JLabel marcador = new JLabel("RONDA 0     •     THROUGHPUT 0", SwingConstants.CENTER);
+    // Arriba solo mostramos en qué ronda vamos.
+    private final JLabel marcador = new JLabel("RONDA 0", SwingConstants.CENTER);
     // El panel que dibuja el circuito.
     private final TableroVisual tablero = new TableroVisual();
     // Este botón lanza una ronda y se desactiva al llegar a 20.
-    private final BotonJuego lanzar = new BotonJuego("LANZAR RONDA");
+    private final BotonJuego lanzar = new BotonJuego("LANZAR");
     // Guardamos la ventana de gráficas mientras está abierta.
     private GraficasFinales graficasFinales;
 
     // Aquí armamos la ventana y acomodamos sus partes.
     @SuppressWarnings("unchecked")
     public InterfazDados() {
-        super("DADOS EN CADENA | Juego 2");
+        super("THE DICE GAME 2");
         asignaciones = (JComboBox<String>[]) new JComboBox<?>[10];
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(920, 760));
@@ -66,7 +64,7 @@ public class InterfazDados extends JFrame {
         contenido.setBorder(BorderFactory.createEmptyBorder(16, 22, 14, 22));
         add(contenido, BorderLayout.CENTER);
 
-        JLabel titulo = new JLabel("DADOS EN CADENA", SwingConstants.CENTER);
+        JLabel titulo = new JLabel("THE DICE GAME 2", SwingConstants.CENTER);
         titulo.setForeground(TEXTO);
         titulo.setFont(new Font("SansSerif", Font.BOLD, 25));
         marcador.setForeground(ACENTO);
@@ -88,10 +86,6 @@ public class InterfazDados extends JFrame {
 
         JPanel controles = new JPanel(new BorderLayout(8, 8));
         controles.setOpaque(false);
-        JLabel etiquetaDados = new JLabel("REASIGNA LOS DADOS ANTES DE CADA LANZAMIENTO");
-        etiquetaDados.setForeground(ACENTO);
-        etiquetaDados.setFont(new Font("SansSerif", Font.BOLD, 12));
-        controles.add(etiquetaDados, BorderLayout.NORTH);
 
         // Ponemos los diez selectores en dos filas de cinco.
         JPanel panelDados = new JPanel(new GridLayout(2, 5, 8, 7));
@@ -101,10 +95,10 @@ public class InterfazDados extends JFrame {
             control.setOpaque(true);
             control.setBackground(TARJETA);
             control.setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
-            JLabel nombre = new JLabel("Dado " + (i + 1));
+            JLabel nombre = new JLabel("D" + (i + 1));
             nombre.setForeground(TEXTO);
             JComboBox<String> selector = new JComboBox<>();
-            for (int e = 1; e <= 10; e++) selector.addItem("Estación " + e);
+            for (int e = 1; e <= 10; e++) selector.addItem("E" + e);
             selector.setSelectedIndex(i);
             final int dado = i + 1;
             selector.addActionListener(event -> {
@@ -120,25 +114,18 @@ public class InterfazDados extends JFrame {
         }
         controles.add(panelDados, BorderLayout.CENTER);
 
-        JPanel pie = new JPanel(new BorderLayout(8, 7));
-        pie.setOpaque(false);
-        estado.setForeground(TEXTO);
         lanzar.addActionListener(event -> lanzarRonda());
-        pie.add(estado, BorderLayout.NORTH);
-        pie.add(lanzar, BorderLayout.SOUTH);
-        controles.add(pie, BorderLayout.SOUTH);
+        controles.add(lanzar, BorderLayout.SOUTH);
         contenido.add(controles, BorderLayout.SOUTH);
     }
 
     // Se llama cuando presionamos el botón para jugar una ronda.
     private void lanzarRonda() {
-        int terminadas = juego.jugarRonda();
-        estado.setText("Ronda " + juego.getRonda() + ": salieron " + terminadas + " fichas");
-        marcador.setText("RONDA " + juego.getRonda() + "     •     THROUGHPUT " + juego.getThroughput());
+        juego.jugarRonda();
+        marcador.setText("RONDA " + juego.getRonda());
         tablero.repaint();
         if (juego.getRonda() == JuegoDados.MAX_TURNOS) {
             // Después de la ronda 20 ya no movemos dados y abrimos las gráficas.
-            estado.setText("Partida terminada: resultados de los 20 turnos");
             lanzar.setEnabled(false);
             for (JComboBox<String> asignacion : asignaciones) asignacion.setEnabled(false);
             graficasFinales = new GraficasFinales(juego);
@@ -195,10 +182,6 @@ public class InterfazDados extends JFrame {
             for (int i = 0; i < 10; i++) dibujarEstacion(g2, i, xs[i], ys[i]);
             dibujarRecursosFinales(g2, left - 57, (top + bottom) / 2 - 22, 128, 102);
 
-            g2.setColor(new Color(170, 187, 207));
-            g2.setFont(new Font("SansSerif", Font.PLAIN, 12));
-            g2.drawString("ENTRADA", 18, top - 82);
-            g2.drawString("SALIDA", 18, bottom + 80);
             g2.dispose();
         }
 
@@ -251,7 +234,7 @@ public class InterfazDados extends JFrame {
             int cx = (xs[indice] + xs[indice + 1]) / 2;
             int cy = (ys[indice] + ys[indice + 1]) / 2;
             int total = juego.getCantidadCola(indice);
-            // El número sí muestra todas; aquí solo limitamos las bolitas dibujadas.
+            // Dibujamos hasta 20 bolitas por cola para que no se amontonen demasiado.
             int visibles = Math.min(total, MAX_FICHAS_DIBUJADAS);
             g.setColor(new Color(22, 31, 43, 225));
             g.fillRoundRect(cx - 37, cy - 40, 74, 80, 14, 14);
@@ -268,10 +251,6 @@ public class InterfazDados extends JFrame {
                 g.setColor(new Color(255, 228, 159));
                 g.drawOval(x, y, TAMANO_FICHA, TAMANO_FICHA);
             }
-            g.setColor(TEXTO);
-            g.setFont(new Font("SansSerif", Font.BOLD, 9));
-            String texto = "Q" + (indice + 1) + " · " + total;
-            g.drawString(texto, cx - g.getFontMetrics().stringWidth(texto) / 2, cy - 26);
         }
 
         // Dibuja la tarjeta de una estación.
@@ -291,8 +270,6 @@ public class InterfazDados extends JFrame {
             g.setColor(TEXTO);
             g.setFont(new Font("SansSerif", Font.BOLD, 10));
             g.drawString("E" + (indice + 1), x + 8, y + 130);
-            g.setColor(ACENTO);
-            g.drawString("CAP. " + juego.getCapacidadEstacion(indice), x + 8, y + 144);
             dibujarDados(g, indice, x + 95, y + 15);
         }
 
@@ -303,20 +280,13 @@ public class InterfazDados extends JFrame {
             g.fillRoundRect(x, y, ancho, alto, 10, 10);
             g.setColor(new Color(103, 125, 147));
             g.drawRoundRect(x, y, ancho, alto, 10, 10);
-            g.setColor(TEXTO);
-            g.setFont(new Font("SansSerif", Font.BOLD, 9));
-            g.drawString("RECURSOS FINALES", x + 8, y + 15);
-            g.setColor(ACENTO);
-            String cantidad = Integer.toString(total);
-            g.drawString(cantidad, x + ancho - 8 - g.getFontMetrics().stringWidth(cantidad), y + 15);
-
             if (total == 0) return;
             // Vamos acomodando las bolitas en filas. Si hay muchas, se hacen más pequeñas
             // para que todas quepan dentro del depósito.
             int columnas = Math.min(total, 9);
             int filas = (total + columnas - 1) / columnas;
             int espacioX = Math.max(1, (ancho - 16) / columnas);
-            int espacioY = Math.max(1, (alto - 25) / filas);
+            int espacioY = Math.max(1, (alto - 12) / filas);
             int diametro = Math.max(2, Math.min(10, Math.min(espacioX - 2, espacioY - 2)));
             g.setColor(new Color(250, 197, 89));
             for (int i = 0; i < total; i++) {
@@ -324,7 +294,7 @@ public class InterfazDados extends JFrame {
                 int col = i % columnas;
                 int fila = i / columnas;
                 int px = x + 8 + col * espacioX + Math.max(0, (espacioX - diametro) / 2);
-                int py = y + 21 + fila * espacioY + Math.max(0, (espacioY - diametro) / 2);
+                int py = y + 6 + fila * espacioY + Math.max(0, (espacioY - diametro) / 2);
                 g.fillOval(px, py, diametro, diametro);
                 g.setColor(new Color(255, 228, 159));
                 g.drawOval(px, py, diametro, diametro);

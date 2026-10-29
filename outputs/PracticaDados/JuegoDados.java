@@ -1,5 +1,4 @@
 import java.util.Random;
-import java.util.Scanner;
 
 // Esta clase se encarga de las reglas y de guardar el estado de la partida.
 // Hay 10 estaciones, 10 dados y 9 colas entre ellas. La interfaz consulta aquí
@@ -49,19 +48,7 @@ public class JuegoDados {
         numeroEnSistemaPorTurno[0] = contarFichasEnColas();
     }
 
-    // Esta parte se usa en la versión de consola; con Enter se deja el dado donde está.
-    private void reasignarDados(Scanner entrada) {
-        System.out.println("Asigna cada uno de los 10 dados a una estación (1-10).");
-        System.out.println("Pulsa Enter para conservar las asignaciones actuales.");
-        for (Dado dado : dados) {
-            System.out.printf("Dado %d (actualmente E%d): ", dado.getId(), dado.getEstacion());
-            String linea = entrada.nextLine().trim();
-            if (linea.isEmpty()) continue;
-            try { dado.asignarA(Integer.parseInt(linea)); }
-            catch (RuntimeException e) { System.out.println("Entrada inválida; se conserva E" + dado.getEstacion() + "."); }
-        }
-    }
-
+    // La interfaz llama a este método cuando se cambia un selector de dados.
     public void asignarDado(int idDado, int numeroEstacion) {
         // El dado 1 está en el índice 0 del arreglo, por eso restamos uno.
         dados[idDado - 1].asignarA(numeroEstacion);
@@ -154,32 +141,4 @@ public class JuegoDados {
     public int getEstacionDado(int indiceDado) { return dados[indiceDado].getEstacion(); }
     public int getResultadoDado(int indiceDado) { return dados[indiceDado].getResultado(); }
 
-    // Este main es una versión de consola por si queremos probar el modelo sin la ventana.
-    public static void main(String[] args) {
-        JuegoDados juego = new JuegoDados();
-        try (Scanner entrada = new Scanner(System.in)) {
-            System.out.println("The Dice Game — Juego 2: reasignación de recursos");
-            System.out.print("¿Cuántas rondas quieres jugar? ");
-            int rondas;
-            // Solo aceptamos entre 1 y 20 rondas.
-            try { rondas = Integer.parseInt(entrada.nextLine().trim()); }
-            catch (NumberFormatException e) { System.out.println("Número inválido."); return; }
-            if (rondas < 1 || rondas > MAX_TURNOS) {
-                System.out.println("Indica entre 1 y " + MAX_TURNOS + " rondas."); return;
-            }
-
-            for (int i = 0; i < rondas; i++) {
-                System.out.println("\n--- Preparación de ronda " + (i + 1) + " ---");
-                // Antes de cada ronda se puede cambiar la estación de los dados.
-                juego.reasignarDados(entrada);
-                int terminadas = juego.jugarRonda();
-                System.out.printf("Ronda %d | terminadas: %d | throughput total: %d%n",
-                        juego.getRonda(), terminadas, juego.getThroughput());
-                // Al final mostramos cuántas fichas siguen esperando en cada cola.
-                for (int cola = 0; cola < NUM_COLAS; cola++)
-                    System.out.printf("Cola %d (E%d→E%d): %d fichas%n", cola + 1, cola + 1, cola + 2,
-                            juego.getCantidadCola(cola));
-            }
-        }
-    }
 }
