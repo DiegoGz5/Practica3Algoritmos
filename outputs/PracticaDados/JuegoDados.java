@@ -35,6 +35,8 @@ public class JuegoDados {
     private long throughput;
     // Cuántas rondas se han jugado hasta el momento.
     private int ronda;
+    // Se activa después de lanzar los dados y se apaga al mover las fichas.
+    private boolean dadosLanzados;
 
     // Preparamos las estaciones, las colas, las fichas iniciales y los dados.
     public JuegoDados() {
@@ -56,12 +58,11 @@ public class JuegoDados {
         dados[idDado - 1].asignarA(numeroEstacion);
     }
 
-    // Juega una ronda y regresa cuántas fichas salieron por la estación 10.
-    // Primero se calcula todo y luego se mueven las fichas, así una ficha no
-    // puede pasar por dos estaciones en una misma ronda.
-    public int jugarRonda() {
+    // Lanza los dados y actualiza las capacidades, pero todavía no mueve fichas.
+    public void lanzarDados() {
         if (ronda >= MAX_TURNOS) throw new IllegalStateException("La partida termina después de 20 turnos.");
-        int turnoActual = ronda + 1;
+        if (dadosLanzados) throw new IllegalStateException("Primero hay que mover las fichas de esta ronda.");
+
         // 1. Quitamos la capacidad de la ronda pasada.
         for (Estacion estacion : estaciones) estacion.reiniciarCapacidad();
         // 2. Lanzamos los dados y sumamos sus resultados en la estación asignada.
@@ -69,6 +70,14 @@ public class JuegoDados {
             int resultado = dado.lanzar(random);
             estaciones[dado.getEstacion() - 1].agregarCapacidad(resultado);
         }
+        dadosLanzados = true;
+    }
+
+    // Mueve las fichas usando los resultados que ya salieron en los dados.
+    // Regresa cuántas llegaron a la estación 10.
+    public int moverFichas() {
+        if (!dadosLanzados) throw new IllegalStateException("Primero hay que lanzar los dados.");
+        int turnoActual = ronda + 1;
 
         // 3. Calculamos cuántas fichas movería cada estación, sin tocar las colas aún.
         // E1 mete fichas nuevas. Las demás solo pueden mover las que ya tienen esperando.
@@ -113,8 +122,11 @@ public class JuegoDados {
         // Guardamos los valores que van a necesitar las gráficas al final de la partida.
         throughputPorTurno[ronda - 1] = (int) throughput;
         numeroEnSistemaPorTurno[ronda] = contarFichasEnColas();
+        dadosLanzados = false;
         return mover[NUM_ESTACIONES - 1];
     }
+
+    public boolean hayLanzamientoPendiente() { return dadosLanzados; }
 
     // Anota el tiempo de una ficha que llegó a la salida. Si ya no cabe,
     // hacemos un arreglo más grande y copiamos lo que teníamos.

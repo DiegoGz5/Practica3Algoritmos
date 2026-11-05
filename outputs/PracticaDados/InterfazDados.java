@@ -41,7 +41,7 @@ public class InterfazDados extends JFrame {
     private final JLabel marcador = new JLabel("RONDA 0", SwingConstants.CENTER);
     // El panel que dibuja el circuito.
     private final TableroVisual tablero = new TableroVisual();
-    // Este botón lanza una ronda y se desactiva al llegar a 20.
+    // El botón alterna entre lanzar los dados y mover las fichas.
     private final BotonJuego lanzar = new BotonJuego("LANZAR");
     // Guardamos la ventana de gráficas mientras está abierta.
     private GraficasFinales graficasFinales;
@@ -119,17 +119,29 @@ public class InterfazDados extends JFrame {
         contenido.add(controles, BorderLayout.SOUTH);
     }
 
-    // Se llama cuando presionamos el botón para jugar una ronda.
+    // El primer clic muestra los resultados de los dados; el siguiente mueve las fichas.
     private void lanzarRonda() {
-        juego.jugarRonda();
+        if (!juego.hayLanzamientoPendiente()) {
+            juego.lanzarDados();
+            marcador.setText("RONDA " + (juego.getRonda() + 1));
+            lanzar.setText("MOVER FICHAS");
+            for (JComboBox<String> asignacion : asignaciones) asignacion.setEnabled(false);
+            tablero.repaint();
+            return;
+        }
+
+        juego.moverFichas();
         marcador.setText("RONDA " + juego.getRonda());
         tablero.repaint();
+        lanzar.setText("LANZAR");
         if (juego.getRonda() == JuegoDados.MAX_TURNOS) {
-            // Después de la ronda 20 ya no movemos dados y abrimos las gráficas.
+            // Después de mover en la ronda 20, abrimos las gráficas.
             lanzar.setEnabled(false);
             for (JComboBox<String> asignacion : asignaciones) asignacion.setEnabled(false);
             graficasFinales = new GraficasFinales(juego);
             graficasFinales.setVisible(true);
+        } else {
+            for (JComboBox<String> asignacion : asignaciones) asignacion.setEnabled(true);
         }
     }
 
