@@ -11,21 +11,23 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GraphicsEnvironment;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.RenderingHints;
+import java.awt.Rectangle;
 import java.awt.geom.Path2D;
 
-// Esta es la ventana principal: aquí vemos el tablero y movemos los dados.
-// Las reglas y los cálculos están en JuegoDados; esta clase se encarga de mostrarlos.
+// Esta es la ventana principal: aquí vemos el tablero y movemos los dados
+// Las reglas y los cálculos están en JuegoDados esta clase se encarga de mostrarlos
 public class InterfazDados extends JFrame {
-    // Colores de fondo y tarjetas.
+    // Colores de fondo y tarjetas
     private static final Color FONDO = new Color(20, 31, 48);
     private static final Color TARJETA = new Color(34, 49, 69);
     private static final Color ACENTO = new Color(83, 220, 190);
     private static final Color TEXTO = new Color(238, 243, 250);
-    // Cada alien tiene un color distinto.
+    // Cada alien tiene un color distinto
     private static final Color[] CAMISETAS = {
             new Color(91, 220, 112), new Color(175, 104, 236), new Color(64, 201, 220),
             new Color(247, 147, 54), new Color(244, 104, 180), new Color(112, 226, 186),
@@ -33,27 +35,30 @@ public class InterfazDados extends JFrame {
             new Color(238, 105, 112)
     };
 
-    // Aquí se guarda la partida actual.
+    // Aquí se guarda la partida actual
     private final JuegoDados juego = new JuegoDados();
-    // Un selector por dado, para poder cambiarlo de estación.
+    // Un selector por dado, para poder cambiarlo de estación
     private final JComboBox<String>[] asignaciones;
-    // Arriba solo mostramos en qué ronda vamos.
+    // Arriba solo mostramos en qué ronda vamos
     private final JLabel marcador = new JLabel("RONDA 0", SwingConstants.CENTER);
-    // El panel que dibuja el circuito.
+    // El panel que dibuja el circuito
     private final TableroVisual tablero = new TableroVisual();
-    // El botón alterna entre lanzar los dados y mover las fichas.
+    // El botón alterna entre lanzar los dados y mover las fichas
     private final BotonJuego lanzar = new BotonJuego("LANZAR");
-    // Guardamos la ventana de gráficas mientras está abierta.
+    // Guardamos la ventana de gráficas mientras está abierta
     private GraficasFinales graficasFinales;
 
-    // Aquí armamos la ventana y acomodamos sus partes.
+    // Aquí armamos la ventana y acomodamos sus partes
     @SuppressWarnings("unchecked")
     public InterfazDados() {
         super("THE DICE GAME 2");
         asignaciones = (JComboBox<String>[]) new JComboBox<?>[10];
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setMinimumSize(new Dimension(920, 760));
-        setSize(1120, 900);
+        Rectangle areaVisible = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        int anchoVentana = Math.min(1280, areaVisible.width - 24);
+        int altoVentana = Math.min(712, areaVisible.height - 16);
+        setMinimumSize(new Dimension(Math.min(960, anchoVentana), Math.min(640, altoVentana)));
+        setSize(anchoVentana, altoVentana);
         setLocationRelativeTo(null);
         getContentPane().setBackground(FONDO);
         setLayout(new BorderLayout());
@@ -75,8 +80,8 @@ public class InterfazDados extends JFrame {
         cabecera.add(marcador);
         contenido.add(cabecera, BorderLayout.NORTH);
 
-        // Si el tablero no cabe, se puede mover un poco hacia los lados.
-        tablero.setPreferredSize(new Dimension(1060, 500));
+        // Si el tablero no cabe, se puede mover un poco hacia los lados
+        tablero.setPreferredSize(new Dimension(1120, 430));
         JScrollPane areaTablero = new JScrollPane(tablero,
                 JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         areaTablero.setBorder(null);
@@ -87,7 +92,7 @@ public class InterfazDados extends JFrame {
         JPanel controles = new JPanel(new BorderLayout(8, 8));
         controles.setOpaque(false);
 
-        // Ponemos los diez selectores en dos filas de cinco.
+        // Ponemos los diez selectores en dos filas de cinco
         JPanel panelDados = new JPanel(new GridLayout(2, 5, 8, 7));
         panelDados.setOpaque(false);
         for (int i = 0; i < 10; i++) {
@@ -103,7 +108,7 @@ public class InterfazDados extends JFrame {
             final int dado = i + 1;
             selector.addActionListener(event -> {
                 // Guardamos el cambio en el juego y volvemos a dibujar para que
-                // el dado aparezca en su nueva estación.
+                // el dado aparezca en su nueva estación
                 juego.asignarDado(dado, selector.getSelectedIndex() + 1);
                 tablero.repaint();
             });
@@ -115,7 +120,13 @@ public class InterfazDados extends JFrame {
         controles.add(panelDados, BorderLayout.CENTER);
 
         lanzar.addActionListener(event -> lanzarRonda());
-        controles.add(lanzar, BorderLayout.SOUTH);
+        BotonJuego verGraficas = new BotonJuego("VER GRÁFICAS");
+        verGraficas.addActionListener(event -> mostrarGraficas(false));
+        JPanel acciones = new JPanel(new GridLayout(1, 2, 8, 0));
+        acciones.setOpaque(false);
+        acciones.add(lanzar);
+        acciones.add(verGraficas);
+        controles.add(acciones, BorderLayout.SOUTH);
         contenido.add(controles, BorderLayout.SOUTH);
     }
 
@@ -135,26 +146,33 @@ public class InterfazDados extends JFrame {
         tablero.repaint();
         lanzar.setText("LANZAR");
         if (juego.getRonda() == JuegoDados.MAX_TURNOS) {
-            // Después de mover en la ronda 20, abrimos las gráficas.
+            // Después de mover en la ronda 20, abrimos las gráficas
             lanzar.setEnabled(false);
             for (JComboBox<String> asignacion : asignaciones) asignacion.setEnabled(false);
-            graficasFinales = new GraficasFinales(juego);
-            graficasFinales.setVisible(true);
+            mostrarGraficas(true);
         } else {
             for (JComboBox<String> asignacion : asignaciones) asignacion.setEnabled(true);
         }
     }
 
-    // Aquí empieza la aplicación gráfica.
+    // Muestra las gráficas con los datos registrados hasta la ronda actual.
+    private void mostrarGraficas(boolean partidaTerminada) {
+        if (graficasFinales != null && graficasFinales.isDisplayable()) {
+            graficasFinales.dispose();
+        }
+        graficasFinales = new GraficasFinales(juego, partidaTerminada);
+        graficasFinales.setVisible(true);
+    }
+    // Aquí empieza la aplicación gráfica
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new InterfazDados().setVisible(true));
     }
 
-    // Este panel dibuja el circuito en forma de serpiente: E1-E5 arriba y E6-E10 abajo.
+    // Este panel dibuja el circuito en forma de serpiente: E1-E5 arriba y E6-E10 abajo
     private class TableroVisual extends JPanel {
-        // Tamaño de cada bolita que representa una ficha.
+        // Tamaño de cada bolita que representa una ficha
         private static final int TAMANO_FICHA = 10;
-        // No dibujamos más de 20 bolitas por cola para que no se encimen demasiado.
+        // No dibujamos más de 20 bolitas por cola para que no se encimen demasiado
         private static final int MAX_FICHAS_DIBUJADAS = 20;
 
         // Le damos color de fondo y borde al área del tablero.
@@ -192,7 +210,7 @@ public class InterfazDados extends JFrame {
             for (int i = 0; i < 9; i++) dibujarCola(g2, i, xs, ys);
             dibujarFlechas(g2, xs, ys);
             for (int i = 0; i < 10; i++) dibujarEstacion(g2, i, xs[i], ys[i]);
-            dibujarRecursosFinales(g2, left - 57, (top + bottom) / 2 - 22, 128, 102);
+            dibujarRecursosFinales(g2, left - 80, (top + bottom) / 2 - 46, 160, 92);
 
             g2.dispose();
         }
@@ -292,25 +310,34 @@ public class InterfazDados extends JFrame {
             g.fillRoundRect(x, y, ancho, alto, 10, 10);
             g.setColor(new Color(103, 125, 147));
             g.drawRoundRect(x, y, ancho, alto, 10, 10);
+
+            g.setColor(TEXTO);
+            g.setFont(new Font("SansSerif", Font.BOLD, 10));
+            g.drawString("SALIDA", x + 8, y + 14);
+            String cantidad = String.valueOf(total);
+            int anchoTexto = g.getFontMetrics().stringWidth(cantidad);
+            g.drawString(cantidad, x + ancho - anchoTexto - 8, y + 14);
             if (total == 0) return;
-            // Vamos acomodando las bolitas en filas. Si hay muchas, se hacen más pequeñas
-            // para que todas quepan dentro del depósito.
-            int columnas = Math.min(total, 9);
+
+            // Las fichas ocupan una cuadrícula más amplia para que sigan separadas al acumularse.
+            int areaX = x + 8;
+            int areaY = y + 22;
+            int areaAncho = ancho - 16;
+            int areaAlto = alto - 28;
+            int columnas = Math.min(total, 16);
             int filas = (total + columnas - 1) / columnas;
-            int espacioX = Math.max(1, (ancho - 16) / columnas);
-            int espacioY = Math.max(1, (alto - 12) / filas);
-            int diametro = Math.max(2, Math.min(10, Math.min(espacioX - 2, espacioY - 2)));
-            g.setColor(new Color(250, 197, 89));
+            int espacioX = Math.max(1, areaAncho / columnas);
+            int espacioY = Math.max(1, areaAlto / filas);
+            int diametro = Math.max(3, Math.min(7, Math.min(espacioX - 1, espacioY - 1)));
             for (int i = 0; i < total; i++) {
-                // Con el índice sabemos en qué fila y columna dibujar esta bolita.
                 int col = i % columnas;
                 int fila = i / columnas;
-                int px = x + 8 + col * espacioX + Math.max(0, (espacioX - diametro) / 2);
-                int py = y + 6 + fila * espacioY + Math.max(0, (espacioY - diametro) / 2);
+                int px = areaX + col * espacioX + (espacioX - diametro) / 2;
+                int py = areaY + fila * espacioY + (espacioY - diametro) / 2;
+                g.setColor(new Color(250, 197, 89));
                 g.fillOval(px, py, diametro, diametro);
                 g.setColor(new Color(255, 228, 159));
                 g.drawOval(px, py, diametro, diametro);
-                g.setColor(new Color(250, 197, 89));
             }
         }
 

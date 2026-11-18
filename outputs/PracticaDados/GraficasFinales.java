@@ -15,7 +15,7 @@ import java.awt.RenderingHints;
 
 // Esta ventana muestra los resultados al terminar la partida. Las gráficas
 // están dibujadas con Swing, así que no necesitamos instalar otra biblioteca.
-public class GraficasFinales extends JFrame {
+public class    GraficasFinales extends JFrame {
     // Usamos colores parecidos a los del tablero.
     private static final Color FONDO = new Color(20, 31, 48);
     private static final Color PANEL = new Color(29, 43, 62);
@@ -25,9 +25,16 @@ public class GraficasFinales extends JFrame {
     // Los números vienen de JuegoDados; aquí solo los mostramos.
     private final JuegoDados juego;
 
-    // Creamos una pestaña para cada gráfica.
+    // El constructor original conserva la opción de mostrar resultados finales.
     public GraficasFinales(JuegoDados juego) {
-        super("Resultados de la partida | 20 turnos");
+        this(juego, true);
+    }
+
+    // En una consulta durante la partida solo se muestran datos ya registrados.
+    public GraficasFinales(JuegoDados juego, boolean partidaTerminada) {
+        super(partidaTerminada
+                ? "Resultados finales | " + juego.getRonda() + " turnos"
+                : "Resultados parciales | " + juego.getRonda() + " turnos");
         this.juego = juego;
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(1000, 670);
@@ -39,7 +46,9 @@ public class GraficasFinales extends JFrame {
         pestañas.addTab("Activity", crearActividad());
         pestañas.addTab("Throughput", new Grafica("Throughput", "Turn", "Finished resources", TipoGrafica.THROUGHPUT));
         pestañas.addTab("Number in system", new Grafica("Number in system", "Turn", "Resources in queues", TipoGrafica.SISTEMA));
-        pestañas.addTab("Time in system", new Grafica("Time in system", "Order of arrival", "Turns", TipoGrafica.TIEMPO));
+        if (partidaTerminada) {
+            pestañas.addTab("Time in system", new Grafica("Time in system", "Order of arrival", "Turns", TipoGrafica.TIEMPO));
+        }
         pestañas.setFont(new Font("SansSerif", Font.BOLD, 13));
         add(pestañas);
     }
@@ -117,7 +126,7 @@ public class GraficasFinales extends JFrame {
                 dibujarCuadricula(g, izquierda, arriba, graficaAncho, graficaAlto, 1);
                 g.setColor(TEXTO);
                 g.setFont(new Font("SansSerif", Font.PLAIN, 15));
-                g.drawString("No hay tiempos registrados para recursos ingresados durante la partida.",
+                g.drawString("No hay datos registrados para mostrar todavía.",
                         izquierda + 20, arriba + graficaAlto / 2);
             } else {
                 dibujarCuadricula(g, izquierda, arriba, graficaAncho, graficaAlto, maximo);
@@ -218,9 +227,9 @@ public class GraficasFinales extends JFrame {
 
         // Number in system tiene 21 datos: empieza en 0 y luego muestra los 20 turnos.
         private int cantidadPuntos() {
-            if (tipo == TipoGrafica.SISTEMA) return JuegoDados.MAX_TURNOS + 1;
+            if (tipo == TipoGrafica.SISTEMA) return juego.getRonda() + 1;
             if (tipo == TipoGrafica.TIEMPO) return juego.getCantidadTiemposEnSistema();
-            return JuegoDados.MAX_TURNOS;
+            return juego.getRonda();
         }
 
         // Los arreglos empiezan en cero, pero en pantalla los turnos empiezan en uno.

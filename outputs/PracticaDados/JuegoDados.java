@@ -52,7 +52,7 @@ public class JuegoDados {
         numeroEnSistemaPorTurno[0] = contarFichasEnColas();
     }
 
-    // La interfaz llama a este método cuando se cambia un selector de dados.
+    // La interfaz llama a este metodo cuando se cambia un selector de dados.
     public void asignarDado(int idDado, int numeroEstacion) {
         // El dado 1 está en el índice 0 del arreglo, por eso restamos uno.
         dados[idDado - 1].asignarA(numeroEstacion);
@@ -79,15 +79,15 @@ public class JuegoDados {
         if (!dadosLanzados) throw new IllegalStateException("Primero hay que lanzar los dados.");
         int turnoActual = ronda + 1;
 
-        // 3. Calculamos cuántas fichas movería cada estación, sin tocar las colas aún.
-        // E1 mete fichas nuevas. Las demás solo pueden mover las que ya tienen esperando.
+        //  Calculamos cuántas fichas movería cada estación, sin tocar las colas aun
+        // E1 mete fichas nuevas. Las demás solo pueden mover las que ya tienen esperando
         int[] mover = new int[NUM_ESTACIONES];
         mover[0] = estaciones[0].getCapacidad(); // E1 introduce trabajo
         for (int i = 1; i < NUM_ESTACIONES; i++) {
             mover[i] = Math.min(estaciones[i].getCapacidad(), colas[i - 1].tamano());
         }
 
-        // 4. Sacamos las fichas que sí se procesaron. También guardamos cuándo entraron,
+        //  Sacamos las fichas que sí se procesaron. También guardamos cuándo entraron,
         // para no perder ese dato mientras pasan de una cola a otra.
         int[][] transferencias = new int[NUM_ESTACIONES][];
         transferencias[0] = new int[mover[0]];
@@ -107,12 +107,12 @@ public class JuegoDados {
             }
         }
 
-        // 5. Ahora sí ponemos cada lote en la siguiente cola. Como todos los movimientos
+        // Ahora sí ponemos cada lote en la siguiente cola. Como todos los movimientos
         // se calcularon antes, las fichas recién llegadas esperan hasta la siguiente ronda.
         for (int cola = 0; cola < NUM_COLAS; cola++) {
             for (int turnoEntrada : transferencias[cola]) colas[cola].encolar(turnoEntrada);
         }
-        // 6. Guardamos lo que movió cada estación y cuánto le permitieron sus dados.
+        // Guardamos lo que movió cada estación y cuánto le permitieron sus dados.
         for (int estacion = 0; estacion < NUM_ESTACIONES; estacion++) {
             actividadMovida[ronda][estacion] = mover[estacion];
             actividadLanzada[ronda][estacion] = estaciones[estacion].getCapacidad();
